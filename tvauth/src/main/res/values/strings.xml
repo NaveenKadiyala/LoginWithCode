@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">TvAuth</string>
+    <string name="mail">"User Mail : %s"</string>
+    <string name="msg">Please enter the below text in the mobile to loggedIn</string>
+</resources>
