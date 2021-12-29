@@ -1,4 +1,4 @@
-package com.naveen.tvauth
+package com.naveen.tvauth.utils
 
 open class SingletonHolder<out T : Any, in A>(creator: (A) -> T) {
 

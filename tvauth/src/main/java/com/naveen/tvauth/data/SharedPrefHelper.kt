@@ -1,7 +1,8 @@
-package com.naveen.tvauth
+package com.naveen.tvauth.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.naveen.tvauth.utils.SingletonHolder
 
 class SharedPrefHelper private constructor(context: Context) {
 
@@ -27,6 +28,6 @@ class SharedPrefHelper private constructor(context: Context) {
     }
 
     fun getUserId(): String {
-        return sharedPreferences.getString(USER_ID, "") ?: ""
+        return sharedPreferences.getString(USER_ID, "")!!
     }
 }

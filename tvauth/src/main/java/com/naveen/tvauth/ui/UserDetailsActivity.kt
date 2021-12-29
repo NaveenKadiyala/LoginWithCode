@@ -1,10 +1,13 @@
-package com.naveen.tvauth
+package com.naveen.tvauth.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
+import com.naveen.tvauth.R
+import com.naveen.tvauth.data.FirestoreHelper
+import com.naveen.tvauth.data.SharedPrefHelper
 import com.naveen.tvauth.databinding.ActivityUserDetailsBinding
+import com.naveen.tvauth.shortToast
 
 class UserDetailsActivity : FragmentActivity() {
 
@@ -25,21 +28,15 @@ class UserDetailsActivity : FragmentActivity() {
                     }
             )
         }
-
         getUserFromFirestore()
     }
 
     private fun getUserFromFirestore() {
-        FirestoreHelper.getUserDetails(SharedPrefHelper.getInstance(this).getUserId(),
-            object : FirestoreHelper.FireStoreHelperInterface {
-                override fun onSuccess(user: FirestoreHelper.User) {
-                    binding.mailTv.text = getString(R.string.mail, user.mail)
-                }
-
-                override fun onFailure(msg: String) {
-                    Toast.makeText(this@UserDetailsActivity, msg, Toast.LENGTH_SHORT).show()
-                }
-
-            })
+        FirestoreHelper.getUserDetails(
+            SharedPrefHelper.getInstance(this).getUserId()
+        ) { user, error ->
+            if (error != null) shortToast(error)
+            else binding.mailTv.text = getString(R.string.mail, user?.mail)
+        }
     }
 }

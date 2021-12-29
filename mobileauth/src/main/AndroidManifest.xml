@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TvLoginSample">
         <activity
-            android:name="com.naveen.mobileauth.MainActivity"
+            android:name="com.naveen.mobileauth.ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -18,10 +18,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Leanback">
         <activity
-            android:name=".UserDetailsActivity"
+            android:name=".ui.UserDetailsActivity"
             android:exported="false" />
         <activity
-            android:name=".TvCodeActivity"
+            android:name=".ui.TvCodeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

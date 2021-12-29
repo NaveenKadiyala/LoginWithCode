@@ -1,17 +1,13 @@
-package com.naveen.mobileauth
+package com.naveen.mobileauth.data
 
 import android.util.Log
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.ktx.Firebase
 import java.util.*
 
 object FirestoreHelper {
-
-    interface FireStoreInterface {
-        fun onSuccess(fcmToken: String)
-        fun onFailure(msg: String)
-    }
 
     private const val DEVICE_COLLECTION = "TvDevices"
     private const val USERS_COLLECTION = "Users"
@@ -21,10 +17,11 @@ object FirestoreHelper {
     private const val MAIL = "mail"
     private const val GEN_DATE = "generatedDate"
     private const val USER_ID = "userId"
+    private const val CODE_EXPIRY_IN_MIN = 3
 
+    private val db by lazy { FirebaseFirestore.getInstance() }
 
     fun saveUser(email: String, userId: String) {
-        val db = FirebaseFirestore.getInstance()
         val docRef = userId.let { db.collection(USERS_COLLECTION).document(it) }
         docRef.get()
             .addOnSuccessListener { document ->
@@ -42,40 +39,48 @@ object FirestoreHelper {
             }
     }
 
-    fun verifyCode(code: String, callback: FireStoreInterface) {
-        val db = FirebaseFirestore.getInstance()
+    fun findCodeDocumentAndVerify(
+        code: String,
+        callback: (fcmToken: String?, error: String?) -> Unit
+    ) {
         val docRef = db.collection(DEVICE_COLLECTION).whereEqualTo(ACTIVATION_CODE, code)
         docRef.get()
             .addOnSuccessListener { document ->
                 if (document != null) {
                     if (document.documents.isEmpty()) {
-                        callback.onFailure("Wrong Activation Code")
+                        callback.invoke(null, "Wrong Activation Code")
                     } else {
                         Log.d("TAG", "verifyCode: ${document.documents.first()}")
-                        val generatedTime =
-                            document.documents.first().getTimestamp(GEN_DATE)?.toDate()
-                        val currentDate = Date()
-                        val diffInMillis = currentDate.time - generatedTime?.time!!
-                        if (diffInMillis > 3 * 60 * 1000) {
-                            callback.onFailure("Activation Code expired, please refresh Tv screen once")
-                        } else {
-                            val docId = document.documents.first().id
-                            db.collection(DEVICE_COLLECTION).document(docId)
-                                .update(mapOf(USER_ID to Firebase.auth.currentUser?.uid!!))
-                                .addOnSuccessListener {
-                                    callback.onSuccess(docId)
-                                }
-                                .addOnFailureListener {
-                                    it.printStackTrace()
-                                    callback.onFailure(it.localizedMessage!!)
-                                }
-                        }
+                        verifyActivationCode(document, callback)
                     }
                 }
             }
             .addOnFailureListener {
                 it.printStackTrace()
-                callback.onFailure(it.localizedMessage!!)
+                callback.invoke(null, it.localizedMessage!!)
             }
+    }
+
+    private fun verifyActivationCode(
+        document: QuerySnapshot,
+        callback: (fcmToken: String?, error: String?) -> Unit
+    ) {
+        val generatedTime = document.documents.first().getTimestamp(GEN_DATE)?.toDate()
+        val currentDate = Date()
+        val diffInMillis = currentDate.time - generatedTime?.time!!
+        if (diffInMillis > CODE_EXPIRY_IN_MIN * 60 * 1000) {
+            callback.invoke(null, "Activation Code expired, Please refresh Tv screen once")
+        } else {
+            val docId = document.documents.first().id
+            db.collection(DEVICE_COLLECTION).document(docId)
+                .update(mapOf(USER_ID to Firebase.auth.currentUser?.uid!!))
+                .addOnSuccessListener {
+                    callback.invoke(docId, null)
+                }
+                .addOnFailureListener {
+                    it.printStackTrace()
+                    callback.invoke(null, it.localizedMessage!!)
+                }
+        }
     }
 }

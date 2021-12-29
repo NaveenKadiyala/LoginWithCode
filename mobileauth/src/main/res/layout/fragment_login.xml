@@ -6,7 +6,7 @@
     android:gravity="center"
     android:orientation="vertical"
     android:layout_margin="20dp"
-    tools:context=".LoginFragment">
+    tools:context=".ui.LoginFragment">
 
     <EditText
         android:id="@+id/log_email_et"

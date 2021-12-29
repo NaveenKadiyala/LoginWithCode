@@ -6,7 +6,7 @@
     android:layout_margin="20dp"
     android:gravity="center"
     android:orientation="vertical"
-    tools:context=".TvCodeActivity">
+    tools:context=".ui.TvCodeActivity">
 
     <TextView
         android:layout_width="wrap_content"

@@ -1,4 +1,4 @@
-package com.naveen.mobileauth
+package com.naveen.mobileauth.ui
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

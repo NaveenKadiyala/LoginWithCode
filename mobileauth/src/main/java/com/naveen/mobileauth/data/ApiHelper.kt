@@ -1,4 +1,4 @@
-package com.naveen.mobileauth.remote
+package com.naveen.mobileauth.data
 
 import android.util.Log
 import com.androidnetworking.AndroidNetworking
@@ -11,16 +11,7 @@ import org.json.JSONObject
 
 object ApiHelper {
 
-    interface ApiResponseListener {
-        fun onSuccess()
-        fun onFailure(msg: String)
-    }
-
-    fun sendPushNotification(
-        fcmToken: String,
-        userId: String,
-        callback: ApiResponseListener
-    ) {
+    fun sendPushNotification(fcmToken: String, userId: String, callback: (error: String?) -> Unit) {
         val jsonObject = JSONObject()
         try {
             val dataObject = JSONObject()
@@ -41,14 +32,14 @@ object ApiHelper {
                 override fun onResponse(response: JSONObject) {
                     Log.d("TAG", "onResponse: $response")
                     if (response.has("success") && response["success"] == 1) {
-                        callback.onSuccess()
+                        callback.invoke(null)
                     }
                 }
 
                 override fun onError(error: ANError) {
                     Log.d("TAG", "onError errorBody : " + error.errorBody)
                     error.printStackTrace()
-                    callback.onFailure(error.errorDetail)
+                    callback.invoke(error.errorDetail)
                 }
             })
     }

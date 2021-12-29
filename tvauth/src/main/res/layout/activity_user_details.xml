@@ -6,7 +6,7 @@
     android:layout_margin="20dp"
     android:gravity="center"
     android:orientation="vertical"
-    tools:context=".UserDetailsActivity">
+    tools:context=".ui.UserDetailsActivity">
 
     <TextView
         android:id="@+id/mail_tv"
