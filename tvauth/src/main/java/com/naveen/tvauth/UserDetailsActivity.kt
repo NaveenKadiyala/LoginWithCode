@@ -16,6 +16,7 @@ class UserDetailsActivity : FragmentActivity() {
         setContentView(binding.root)
 
         binding.logoutBtn.setOnClickListener {
+            FirestoreHelper.clearUserId(SharedPrefHelper.getInstance(this).getUserId())
             SharedPrefHelper.getInstance(this).storeUserId("")
             startActivity(
                 Intent(this, TvCodeActivity::class.java)

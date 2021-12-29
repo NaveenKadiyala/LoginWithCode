@@ -1,7 +1,9 @@
 package com.naveen.mobileauth
 
 import android.util.Log
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
 import java.util.*
 
 object FirestoreHelper {
@@ -18,6 +20,7 @@ object FirestoreHelper {
     private const val ID = "id"
     private const val MAIL = "mail"
     private const val GEN_DATE = "generatedDate"
+    private const val USER_ID = "userId"
 
 
     fun saveUser(email: String, userId: String) {
@@ -49,13 +52,24 @@ object FirestoreHelper {
                         callback.onFailure("Wrong Activation Code")
                     } else {
                         Log.d("TAG", "verifyCode: ${document.documents.first()}")
-                        val generatedTime = document.documents.first().getTimestamp(GEN_DATE)?.toDate()
+                        val generatedTime =
+                            document.documents.first().getTimestamp(GEN_DATE)?.toDate()
                         val currentDate = Date()
                         val diffInMillis = currentDate.time - generatedTime?.time!!
                         if (diffInMillis > 3 * 60 * 1000) {
                             callback.onFailure("Activation Code expired, please refresh Tv screen once")
-                        } else
-                            callback.onSuccess(document.documents.first().id)
+                        } else {
+                            val docId = document.documents.first().id
+                            db.collection(DEVICE_COLLECTION).document(docId)
+                                .update(mapOf(USER_ID to Firebase.auth.currentUser?.uid!!))
+                                .addOnSuccessListener {
+                                    callback.onSuccess(docId)
+                                }
+                                .addOnFailureListener {
+                                    it.printStackTrace()
+                                    callback.onFailure(it.localizedMessage!!)
+                                }
+                        }
                     }
                 }
             }

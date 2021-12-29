@@ -59,7 +59,20 @@ class TvCodeActivity : FragmentActivity() {
             Log.d("TAG", "getToken: $token")
             val generatedCode = getRandomString()
             binding.codeTxtView.text = generatedCode
-            FirestoreHelper.saveTvCode(token, generatedCode)
+            FirestoreHelper.saveTvCode(
+                token,
+                generatedCode,
+                object : FirestoreHelper.LoginListener {
+                    override fun onSuccess(userId: String) {
+                        Log.d("TAG", "onSuccess: $userId")
+                        SharedPrefHelper.getInstance(this@TvCodeActivity).storeUserId(userId)
+                        openUserDetailsScreen()
+                    }
+
+                    override fun onFailure(msg: String) {
+
+                    }
+                })
         })
     }
 }

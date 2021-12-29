@@ -51,7 +51,8 @@ class TvCodeFragment : Fragment() {
             val inputCode = binding.codeEt.text.toString()
             FirestoreHelper.verifyCode(inputCode, object : FirestoreHelper.FireStoreInterface {
                 override fun onSuccess(fcmToken: String) {
-                    ApiHelper.sendPushNotification(fcmToken, Firebase.auth.currentUser?.uid!!,
+                    Toast.makeText(requireContext(), "Tv Login Successful", Toast.LENGTH_SHORT).show()
+                    /*ApiHelper.sendPushNotification(fcmToken, Firebase.auth.currentUser?.uid!!,
                     object : ApiHelper.ApiResponseListener{
                         override fun onSuccess() {
                             Toast.makeText(requireContext(), "Tv Login Successful", Toast.LENGTH_SHORT).show()
@@ -61,7 +62,7 @@ class TvCodeFragment : Fragment() {
                             Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
                         }
 
-                    })
+                    })*/
                 }
 
                 override fun onFailure(msg: String) {
