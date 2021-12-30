@@ -3,9 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_margin="20dp"
     android:gravity="center"
     android:orientation="vertical"
-    android:layout_margin="20dp"
     tools:context=".ui.TvCodeFragment">
 
     <EditText
@@ -20,6 +20,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Verify" />
+
+    <Button
+        android:id="@+id/scan_code_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Scan QR Code" />
 
     <Button
         android:id="@+id/logout_btn"

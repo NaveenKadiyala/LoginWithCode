@@ -2,27 +2,23 @@ package com.naveen.mobileauth.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanIntentResult
+import com.journeyapps.barcodescanner.ScanOptions
 import com.naveen.mobileauth.data.FirestoreHelper
 import com.naveen.mobileauth.databinding.FragmentTvCodeBinding
 import com.naveen.mobileauth.shortToast
 
-
 class TvCodeFragment : Fragment() {
 
     private lateinit var binding: FragmentTvCodeBinding
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,12 +31,7 @@ class TvCodeFragment : Fragment() {
     companion object {
 
         @JvmStatic
-        fun newInstance() =
-            TvCodeFragment().apply {
-                arguments = Bundle().apply {
-
-                }
-            }
+        fun newInstance() = TvCodeFragment()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -48,21 +39,7 @@ class TvCodeFragment : Fragment() {
 
         binding.verifyCodeBtn.setOnClickListener {
             val inputCode = binding.codeEt.text.toString()
-            FirestoreHelper.findCodeDocumentAndVerify(inputCode) { _, error ->
-                if (error != null) {
-                    requireActivity().shortToast(error)
-                } else {
-                    requireActivity().shortToast("Tv Login Successful")
-                    /*ApiHelper.sendPushNotification(fcmToken, Firebase.auth.currentUser?.uid!!,){ err->
-                        if (err!=null){
-                            requireActivity().shortToast(err)
-                        }else{
-                            requireActivity().shortToast("Tv Login Successful")
-
-                        }
-                    }*/
-                }
-            }
+            validateInputCode(inputCode)
         }
 
         binding.logoutBtn.setOnClickListener {
@@ -73,5 +50,46 @@ class TvCodeFragment : Fragment() {
                 }
             )
         }
+
+        binding.scanCodeBtn.setOnClickListener {
+            val options = ScanOptions()
+            options.captureActivity = AnyOrientationCaptureActivity::class.java
+            // options.setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+            options.setPrompt("Scan a barcode")
+            qrCodeLauncher.launch(options)
+        }
+
     }
+
+    private fun validateInputCode(inputCode: String) {
+        if (inputCode.isEmpty()) {
+            return
+        }
+        FirestoreHelper.findCodeDocumentAndVerify(inputCode) { _, error ->
+            if (error != null) {
+                requireActivity().shortToast(error)
+            } else {
+                requireActivity().shortToast("Tv Login Successful")
+                /*ApiHelper.sendPushNotification(fcmToken, Firebase.auth.currentUser?.uid!!,){ err->
+                        if (err!=null){
+                            requireActivity().shortToast(err)
+                        }else{
+                            requireActivity().shortToast("Tv Login Successful")
+
+                        }
+                    }*/
+            }
+        }
+    }
+
+    // Register the launcher and result handler
+    private val qrCodeLauncher =
+        registerForActivityResult(ScanContract()) { result: ScanIntentResult ->
+            if (result.contents == null) {
+                requireActivity().shortToast("Scanning Cancelled")
+            } else {
+                Log.d("TAG", "QRCode scanned: ${result.contents}")
+                validateInputCode(result.contents)
+            }
+        }
 }

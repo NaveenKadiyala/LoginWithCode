@@ -17,6 +17,7 @@ object FirestoreHelper {
     private const val GEN_DATE = "generatedDate"
     private const val DEVICE_NAME = "deviceName"
     private const val USER_ID = "userId"
+     const val CODE_EXPIRY_IN_MIN = 3L
 
     private val db by lazy { FirebaseFirestore.getInstance() }
 

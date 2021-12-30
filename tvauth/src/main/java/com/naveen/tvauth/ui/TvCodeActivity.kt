@@ -2,12 +2,17 @@ package com.naveen.tvauth.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.fragment.app.FragmentActivity
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.zxing.BarcodeFormat
+import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.naveen.tvauth.TvAuthApp
 import com.naveen.tvauth.data.FirestoreHelper
+import com.naveen.tvauth.data.FirestoreHelper.CODE_EXPIRY_IN_MIN
 import com.naveen.tvauth.data.SharedPrefHelper
 import com.naveen.tvauth.databinding.ActivityTvCodeBinding
 import com.naveen.tvauth.shortToast
@@ -15,6 +20,7 @@ import com.naveen.tvauth.shortToast
 class TvCodeActivity : FragmentActivity() {
 
     private lateinit var binding: ActivityTvCodeBinding
+    private var token = "";
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,14 +41,15 @@ class TvCodeActivity : FragmentActivity() {
             if (!task.isSuccessful) {
                 return@OnCompleteListener
             }
-            val token = task.result
-            createAndStoreActivationCode(token)
+            token = task.result
+            createAndStoreActivationCode()
         })
     }
 
-    private fun createAndStoreActivationCode(token: String) {
+    private fun createAndStoreActivationCode() {
         val activationCode = getRandomString()
         binding.codeTxtView.text = activationCode
+        generateQrCodeAndDisplay(activationCode)
         FirestoreHelper.saveTvCode(this, token, activationCode) { userId, error ->
             if (error != null) {
                 shortToast(error)
@@ -51,6 +58,9 @@ class TvCodeActivity : FragmentActivity() {
                 openUserDetailsScreen()
             }
         }
+        Handler(Looper.getMainLooper()).postDelayed({
+            createAndStoreActivationCode()
+        }, CODE_EXPIRY_IN_MIN * 60 * 1000)
     }
 
     private fun getRandomString(): String {
@@ -67,6 +77,16 @@ class TvCodeActivity : FragmentActivity() {
                     flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                 }
         )
+    }
+
+    private fun generateQrCodeAndDisplay(content: String) {
+        try {
+            val barcodeEncoder = BarcodeEncoder()
+            val bitmap = barcodeEncoder.encodeBitmap(content, BarcodeFormat.QR_CODE, 600, 600)
+            binding.qrCodeImgView.setImageBitmap(bitmap)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun listenForDeviceLogin() {
