@@ -44,6 +44,7 @@ class TvCodeFragment : Fragment() {
 
         binding.logoutBtn.setOnClickListener {
             Firebase.auth.signOut()
+            FirestoreHelper.clearIsLoggedIn(Firebase.auth.currentUser?.uid!!)
             startActivity(Intent(requireActivity(), MainActivity::class.java)
                 .apply {
                     flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK

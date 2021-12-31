@@ -5,6 +5,7 @@ import android.util.Log
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.ServerTimestamp
 import com.google.firebase.ktx.Firebase
 import com.naveen.mobileauth.MobileAuthApp
 import java.util.*
@@ -19,7 +20,8 @@ object FirestoreHelper {
     private const val MAIL = "mail"
     private const val GEN_DATE = "generatedDate"
     private const val USER_ID = "userId"
-    private const val ACTIVE_DEVICES = "ActiveDevices"
+    private const val DEVICES = "Devices"
+    private const val IS_LOGGED_IN = "isLoggedIn"
     private const val CODE_EXPIRY_IN_MIN = 3
 
     private val db by lazy { FirebaseFirestore.getInstance() }
@@ -35,8 +37,13 @@ object FirestoreHelper {
                         CREATED_DATE to Date()
                     )
                     docRef.set(user)
-                    docRef.collection(ACTIVE_DEVICES).document()
-                        .set(ActiveDevice(MobileAuthApp.getInstance().getDeviceId()))
+                    docRef.collection(DEVICES).document()
+                        .set(
+                            ActiveDevice(
+                                deviceName = MobileAuthApp.getInstance().getDeviceId(),
+                                isLoggedIn = true
+                            )
+                        )
                 }
             }
             .addOnFailureListener {
@@ -45,9 +52,36 @@ object FirestoreHelper {
     }
 
     fun updateActiveDeviceInUser(userId: String) {
-        db.collection(USERS_COLLECTION).document(userId)
-            .collection(ACTIVE_DEVICES).document()
-            .set(ActiveDevice(MobileAuthApp.getInstance().getDeviceId()))
+        val docRef = db.collection(USERS_COLLECTION).document(userId)
+            .collection(DEVICES).document(MobileAuthApp.getInstance().getDeviceId())
+        docRef.get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    docRef.set(
+                        ActiveDevice(
+                            deviceName = MobileAuthApp.getInstance().getDeviceId(),
+                            isLoggedIn = true
+                        )
+                    )
+                }
+            }
+            .addOnFailureListener {
+                it.printStackTrace()
+            }
+    }
+
+    fun clearIsLoggedIn(userId: String) {
+        val docRef = db.collection(USERS_COLLECTION).document(userId)
+            .collection(DEVICES).document(MobileAuthApp.getInstance().getDeviceId())
+        docRef.get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    docRef.update(mapOf(IS_LOGGED_IN to false))
+                }
+            }
+            .addOnFailureListener {
+                it.printStackTrace()
+            }
     }
 
     fun findCodeDocumentAndVerify(
@@ -96,8 +130,8 @@ object FirestoreHelper {
     }
 
     data class ActiveDevice(
-        var deviceId: String = "",
         val deviceName: String = Build.DEVICE,
-        val loggedInTime: Date = Date()
+        val loggedInTime: Date = Date(),
+        val isLoggedIn: Boolean = false
     )
 }
