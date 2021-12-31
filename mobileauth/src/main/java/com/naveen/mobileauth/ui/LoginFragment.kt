@@ -5,8 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.naveen.mobileauth.*
 import com.naveen.mobileauth.data.FirebaseAuthHelper
+import com.naveen.mobileauth.data.FirestoreHelper
 import com.naveen.mobileauth.databinding.FragmentLoginBinding
 import com.naveen.mobileauth.replaceFragment
 
@@ -43,6 +47,9 @@ class LoginFragment : Fragment() {
                 if (error != null) {
                     requireActivity().shortToast(error)
                 } else {
+                    Firebase.auth.currentUser?.uid?.let { it ->
+                        FirestoreHelper.updateActiveDeviceInUser(it)
+                    }
                     requireActivity().shortToast("Login successful")
                     requireActivity().supportFragmentManager
                         .replaceFragment(R.id.frag_container, TvCodeFragment.newInstance())

@@ -4,13 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.fragment.app.FragmentActivity
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.messaging.FirebaseMessaging
 import com.google.zxing.BarcodeFormat
 import com.journeyapps.barcodescanner.BarcodeEncoder
-import com.naveen.tvauth.TvAuthApp
 import com.naveen.tvauth.data.FirestoreHelper
 import com.naveen.tvauth.data.FirestoreHelper.CODE_EXPIRY_IN_MIN
 import com.naveen.tvauth.data.SharedPrefHelper
@@ -20,7 +16,6 @@ import com.naveen.tvauth.shortToast
 class TvCodeActivity : FragmentActivity() {
 
     private lateinit var binding: ActivityTvCodeBinding
-    private var token = "";
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,29 +23,18 @@ class TvCodeActivity : FragmentActivity() {
         setContentView(binding.root)
         if (SharedPrefHelper.getInstance(this).getUserId().isEmpty()) {
             // Not Logged In
-            getFcmToken()
-            //  listenForDeviceLogin()
+            createAndStoreActivationCode()
         } else {
             // Logged In
             openUserDetailsScreen()
         }
     }
 
-    private fun getFcmToken() {
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                return@OnCompleteListener
-            }
-            token = task.result
-            createAndStoreActivationCode()
-        })
-    }
-
     private fun createAndStoreActivationCode() {
         val activationCode = getRandomString()
         binding.codeTxtView.text = activationCode
         generateQrCodeAndDisplay(activationCode)
-        FirestoreHelper.saveTvCode(this, token, activationCode) { userId, error ->
+        FirestoreHelper.saveTvCode(this, activationCode) { userId, error ->
             if (error != null) {
                 shortToast(error)
             } else {
@@ -87,13 +71,5 @@ class TvCodeActivity : FragmentActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-    }
-
-    private fun listenForDeviceLogin() {
-        TvAuthApp.getInstance().firebaseUserIdLiveData.observe(this, {
-            Log.d("TAG", "listenForDeviceLogin: $it")
-            SharedPrefHelper.getInstance(this).storeUserId(it)
-            openUserDetailsScreen()
-        })
     }
 }

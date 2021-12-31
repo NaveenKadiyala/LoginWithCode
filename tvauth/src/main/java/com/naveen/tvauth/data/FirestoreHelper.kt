@@ -1,7 +1,9 @@
 package com.naveen.tvauth.data
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentReference
@@ -17,17 +19,18 @@ object FirestoreHelper {
     private const val GEN_DATE = "generatedDate"
     private const val DEVICE_NAME = "deviceName"
     private const val USER_ID = "userId"
-     const val CODE_EXPIRY_IN_MIN = 3L
+    const val CODE_EXPIRY_IN_MIN = 3L
 
     private val db by lazy { FirebaseFirestore.getInstance() }
 
+    @SuppressLint("HardwareIds")
     fun saveTvCode(
         activity: Activity,
-        fcmToken: String,
         activationCode: String,
         callback: (userId: String?, error: String?) -> Unit
     ) {
-        val docRef = fcmToken.let { db.collection(DEVICE_COLLECTION).document(it) }
+        val androidId = Settings.Secure.getString(activity.contentResolver, Settings.Secure.ANDROID_ID)
+        val docRef = db.collection(DEVICE_COLLECTION).document(androidId)
         docRef.get()
             .addOnSuccessListener { document ->
                 if (document != null) {
@@ -68,6 +71,11 @@ object FirestoreHelper {
         }
     }
 
+    private fun updateTvDetailsInUser(userId: String){
+        val docRef = db.collection(USERS_COLLECTION).document(userId)
+
+    }
+
     fun clearUserId(userId: String) {
         val docRef = db.collection(DEVICE_COLLECTION).whereEqualTo(USER_ID, userId)
         docRef.get()
@@ -104,5 +112,11 @@ object FirestoreHelper {
         var id: String = ""
         var mail: String = ""
     }
+
+    data class ActiveDevice(
+        var deviceId: String = "",
+        val deviceName: String = Build.DEVICE,
+        val loggedInTime: Date = Date()
+    )
 
 }

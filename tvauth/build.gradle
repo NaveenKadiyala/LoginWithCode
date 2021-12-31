@@ -41,7 +41,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.firebase:firebase-firestore-ktx'
-    implementation 'com.google.firebase:firebase-messaging-ktx'
 
+    // for QRCode generator
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
 }

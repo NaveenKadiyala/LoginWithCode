@@ -1,10 +1,12 @@
 package com.naveen.mobileauth.ui
 
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.naveen.mobileauth.MobileAuthApp
 import com.naveen.mobileauth.R
 import com.naveen.mobileauth.data.FirebaseAuthHelper
 import com.naveen.mobileauth.data.FirestoreHelper

@@ -70,14 +70,6 @@ class TvCodeFragment : Fragment() {
                 requireActivity().shortToast(error)
             } else {
                 requireActivity().shortToast("Tv Login Successful")
-                /*ApiHelper.sendPushNotification(fcmToken, Firebase.auth.currentUser?.uid!!,){ err->
-                        if (err!=null){
-                            requireActivity().shortToast(err)
-                        }else{
-                            requireActivity().shortToast("Tv Login Successful")
-
-                        }
-                    }*/
             }
         }
     }

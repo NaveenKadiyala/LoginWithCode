@@ -1,10 +1,12 @@
 package com.naveen.mobileauth.data
 
+import android.os.Build
 import android.util.Log
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.ktx.Firebase
+import com.naveen.mobileauth.MobileAuthApp
 import java.util.*
 
 object FirestoreHelper {
@@ -17,6 +19,7 @@ object FirestoreHelper {
     private const val MAIL = "mail"
     private const val GEN_DATE = "generatedDate"
     private const val USER_ID = "userId"
+    private const val ACTIVE_DEVICES = "ActiveDevices"
     private const val CODE_EXPIRY_IN_MIN = 3
 
     private val db by lazy { FirebaseFirestore.getInstance() }
@@ -32,11 +35,19 @@ object FirestoreHelper {
                         CREATED_DATE to Date()
                     )
                     docRef.set(user)
+                    docRef.collection(ACTIVE_DEVICES).document()
+                        .set(ActiveDevice(MobileAuthApp.getInstance().getDeviceId()))
                 }
             }
             .addOnFailureListener {
                 it.printStackTrace()
             }
+    }
+
+    fun updateActiveDeviceInUser(userId: String) {
+        db.collection(USERS_COLLECTION).document(userId)
+            .collection(ACTIVE_DEVICES).document()
+            .set(ActiveDevice(MobileAuthApp.getInstance().getDeviceId()))
     }
 
     fun findCodeDocumentAndVerify(
@@ -83,4 +94,10 @@ object FirestoreHelper {
                 }
         }
     }
+
+    data class ActiveDevice(
+        var deviceId: String = "",
+        val deviceName: String = Build.DEVICE,
+        val loggedInTime: Date = Date()
+    )
 }
