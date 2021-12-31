@@ -9,6 +9,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
+import com.naveen.tvauth.TvAuthApp
 import java.util.*
 
 object FirestoreHelper {
@@ -19,6 +20,8 @@ object FirestoreHelper {
     private const val GEN_DATE = "generatedDate"
     private const val DEVICE_NAME = "deviceName"
     private const val USER_ID = "userId"
+    private const val DEVICES = "Devices"
+    private const val IS_LOGGED_IN = "loggedIn"
     const val CODE_EXPIRY_IN_MIN = 3L
 
     private val db by lazy { FirebaseFirestore.getInstance() }
@@ -29,7 +32,7 @@ object FirestoreHelper {
         activationCode: String,
         callback: (userId: String?, error: String?) -> Unit
     ) {
-        val androidId = Settings.Secure.getString(activity.contentResolver, Settings.Secure.ANDROID_ID)
+        val androidId = TvAuthApp.getInstance().getDeviceId()
         val docRef = db.collection(DEVICE_COLLECTION).document(androidId)
         docRef.get()
             .addOnSuccessListener { document ->
@@ -37,7 +40,7 @@ object FirestoreHelper {
                     val user = hashMapOf(
                         ACTIVATION_CODE to activationCode,
                         GEN_DATE to Date(),
-                        DEVICE_NAME to Build.DEVICE,
+                        DEVICE_NAME to "${Build.MANUFACTURER} ${Build.MODEL}",
                         USER_ID to ""
                     )
                     docRef.set(user)
@@ -71,11 +74,6 @@ object FirestoreHelper {
         }
     }
 
-    private fun updateTvDetailsInUser(userId: String){
-        val docRef = db.collection(USERS_COLLECTION).document(userId)
-
-    }
-
     fun clearUserId(userId: String) {
         val docRef = db.collection(DEVICE_COLLECTION).whereEqualTo(USER_ID, userId)
         docRef.get()
@@ -84,6 +82,38 @@ object FirestoreHelper {
                     val docId = document.documents.first().id
                     db.collection(DEVICE_COLLECTION).document(docId)
                         .update(mapOf(USER_ID to ""))
+                }
+            }
+            .addOnFailureListener {
+                it.printStackTrace()
+            }
+    }
+
+    fun addDeviceInUserDevicesList(userId: String) {
+        val docRef = db.collection(USERS_COLLECTION).document(userId)
+            .collection(DEVICES).document(TvAuthApp.getInstance().getDeviceId())
+        docRef.get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    docRef.set(
+                        ActiveDevice(
+                            isLoggedIn = true
+                        )
+                    )
+                }
+            }
+            .addOnFailureListener {
+                it.printStackTrace()
+            }
+    }
+
+    fun clearIsLoggedIn(userId: String) {
+        val docRef = db.collection(USERS_COLLECTION).document(userId)
+            .collection(DEVICES).document(TvAuthApp.getInstance().getDeviceId())
+        docRef.get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    docRef.update(mapOf(IS_LOGGED_IN to false))
                 }
             }
             .addOnFailureListener {
@@ -114,9 +144,9 @@ object FirestoreHelper {
     }
 
     data class ActiveDevice(
-        var deviceId: String = "",
-        val deviceName: String = Build.DEVICE,
-        val loggedInTime: Date = Date()
+        val deviceName: String = "${Build.MANUFACTURER} ${Build.MODEL}",
+        val loggedInTime: Date = Date(),
+        val isLoggedIn: Boolean = false
     )
 
 }

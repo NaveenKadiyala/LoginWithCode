@@ -123,7 +123,7 @@ object FirestoreHelper {
     }
 
     data class ActiveDevice(
-        val deviceName: String = Build.DEVICE,
+        val deviceName: String = "${Build.MANUFACTURER} ${Build.MODEL}",
         val loggedInTime: Date = Date(),
         val isLoggedIn: Boolean = false
     )

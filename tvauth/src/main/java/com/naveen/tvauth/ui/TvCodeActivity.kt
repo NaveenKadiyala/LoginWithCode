@@ -39,6 +39,7 @@ class TvCodeActivity : FragmentActivity() {
                 shortToast(error)
             } else {
                 SharedPrefHelper.getInstance(this@TvCodeActivity).storeUserId(userId!!)
+                FirestoreHelper.addDeviceInUserDevicesList(userId)
                 openUserDetailsScreen()
             }
         }
