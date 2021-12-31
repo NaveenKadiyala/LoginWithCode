@@ -21,7 +21,7 @@ object FirestoreHelper {
     private const val GEN_DATE = "generatedDate"
     private const val USER_ID = "userId"
     private const val DEVICES = "Devices"
-    private const val IS_LOGGED_IN = "isLoggedIn"
+    private const val IS_LOGGED_IN = "loggedIn"
     private const val CODE_EXPIRY_IN_MIN = 3
 
     private val db by lazy { FirebaseFirestore.getInstance() }
@@ -37,13 +37,7 @@ object FirestoreHelper {
                         CREATED_DATE to Date()
                     )
                     docRef.set(user)
-                    docRef.collection(DEVICES).document()
-                        .set(
-                            ActiveDevice(
-                                deviceName = MobileAuthApp.getInstance().getDeviceId(),
-                                isLoggedIn = true
-                            )
-                        )
+                    addDeviceInUserDevicesList(userId)
                 }
             }
             .addOnFailureListener {
@@ -51,7 +45,7 @@ object FirestoreHelper {
             }
     }
 
-    fun updateActiveDeviceInUser(userId: String) {
+    fun addDeviceInUserDevicesList(userId: String) {
         val docRef = db.collection(USERS_COLLECTION).document(userId)
             .collection(DEVICES).document(MobileAuthApp.getInstance().getDeviceId())
         docRef.get()
@@ -59,7 +53,6 @@ object FirestoreHelper {
                 if (document != null) {
                     docRef.set(
                         ActiveDevice(
-                            deviceName = MobileAuthApp.getInstance().getDeviceId(),
                             isLoggedIn = true
                         )
                     )

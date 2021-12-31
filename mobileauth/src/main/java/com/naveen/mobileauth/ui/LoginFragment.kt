@@ -48,7 +48,7 @@ class LoginFragment : Fragment() {
                     requireActivity().shortToast(error)
                 } else {
                     Firebase.auth.currentUser?.uid?.let { it ->
-                        FirestoreHelper.updateActiveDeviceInUser(it)
+                        FirestoreHelper.addDeviceInUserDevicesList(it)
                     }
                     requireActivity().shortToast("Login successful")
                     requireActivity().supportFragmentManager
