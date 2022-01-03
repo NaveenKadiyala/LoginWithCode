@@ -16,6 +16,7 @@ import com.naveen.tvauth.shortToast
 class TvCodeActivity : FragmentActivity() {
 
     private lateinit var binding: ActivityTvCodeBinding
+    private var handler: Handler? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +44,8 @@ class TvCodeActivity : FragmentActivity() {
                 openUserDetailsScreen()
             }
         }
-        Handler(Looper.getMainLooper()).postDelayed({
+        handler = Handler(Looper.getMainLooper())
+        handler?.postDelayed({
             createAndStoreActivationCode()
         }, CODE_EXPIRY_IN_MIN * 60 * 1000)
     }
@@ -72,5 +74,10 @@ class TvCodeActivity : FragmentActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        handler?.removeCallbacksAndMessages(null)
     }
 }

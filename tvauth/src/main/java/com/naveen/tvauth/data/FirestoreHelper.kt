@@ -22,7 +22,7 @@ object FirestoreHelper {
     private const val USER_ID = "userId"
     private const val DEVICES = "Devices"
     private const val IS_LOGGED_IN = "loggedIn"
-    const val CODE_EXPIRY_IN_MIN = 3L
+    const val CODE_EXPIRY_IN_MIN = 1L
 
     private val db by lazy { FirebaseFirestore.getInstance() }
 
@@ -58,7 +58,7 @@ object FirestoreHelper {
         activity: Activity,
         callback: (userId: String?, error: String?) -> Unit
     ) {
-        docRef.addSnapshotListener(activity) { value, e ->
+        docRef.addSnapshotListener { value, e ->
             if (e != null) {
                 Log.d("TAG", "Listen failed.", e)
             }
@@ -78,7 +78,7 @@ object FirestoreHelper {
         val docRef = db.collection(DEVICE_COLLECTION).whereEqualTo(USER_ID, userId)
         docRef.get()
             .addOnSuccessListener { document ->
-                if (document != null) {
+                if (document != null && document.documents.isNotEmpty()) {
                     val docId = document.documents.first().id
                     db.collection(DEVICE_COLLECTION).document(docId)
                         .update(mapOf(USER_ID to ""))
